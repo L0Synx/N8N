@@ -1,0 +1,107 @@
+{
+  "name": "ENDOMEC INBOX - Enviar texto (CONFIGURAR)",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "e11f7516-1707-49ee-bd0f-7e3ffdac590c",
+      "name": "Recibir envio",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => { const { jid, text, requestId } = item.json; if (!/^\\d{7,15}@s\\.whatsapp\\.net$/.test(jid || '')) throw new Error('Se necesita el JID telefonico real'); if (!text || typeof text !== 'string') throw new Error('Falta texto'); if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId || '')) throw new Error('Falta UUID persistente para este envio'); return { json: { jid, text, requestId } }; });"
+      },
+      "id": "e075a7e9-218a-4329-bae3-d1cc9d1bd20b",
+      "name": "Validar contrato",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.ENDOMEC_INBOX_URL + '/api/integrations/bot/send-text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 25000
+        }
+      },
+      "id": "e8795798-67e6-4c3b-9c93-88bb18c2d9f8",
+      "name": "Enviar via Inbox - seleccionar credencial BOT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => { const r = item.json; if (r.blocked) return { json: { ...r, inboxOutcome: 'blocked_do_not_send' } }; if (r.status === 'uncertain' || r.status === 'sending') return { json: { ...r, inboxOutcome: 'review_do_not_retry' } }; return { json: { ...r, inboxOutcome: r.status === 'failed' ? 'failed' : 'accepted' } }; });"
+      },
+      "id": "3eefe1c4-949d-4c7c-9016-6dcea52322a1",
+      "name": "Validar resultado sin reenviar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Recibir envio": {
+      "main": [
+        [
+          {
+            "node": "Validar contrato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar contrato": {
+      "main": [
+        [
+          {
+            "node": "Enviar via Inbox - seleccionar credencial BOT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar via Inbox - seleccionar credencial BOT": {
+      "main": [
+        [
+          {
+            "node": "Validar resultado sin reenviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {},
+  "tags": []
+}

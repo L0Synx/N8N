@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {normalize,receiptStatus,recipient,validJid} from '../server/normalize.js';
+import {loadConfig} from '../server/config.js';
+const now=new Date('2026-10-14T22:00:00Z');
+const event=(changes={})=>({key:{id:'TEST-ID',remoteJid:'5493510000000@s.whatsapp.net',fromMe:false},message:{conversation:'Hola'},messageTimestamp:1792015200,...changes});
+test('texto entrante conserva ID, fecha, destinatario y dirección',()=>{const m=normalize(event(),now);assert.equal(m.externalId,'TEST-ID');assert.equal(m.body,'Hola');assert.equal(m.direction,'in');assert.equal(m.phone,'5493510000000');assert.equal(m.timestampSource,'provider');});
+test('saliente sin procedencia probada no se atribuye al bot',()=>{const m=normalize(event({key:{...event().key,fromMe:true}}),now);assert.equal(m.sender,'external');assert.equal(m.direction,'out');});
+test('rechaza grupos, estados y JID desconocido',()=>{for(const jid of ['120000@g.us','status@broadcast','@s.whatsapp.net'])assert.equal(normalize(event({key:{id:'x',remoteJid:jid}}),now).ignored,true);});
+test('LID no se interpreta como teléfono; utiliza alternativa solo si es un JID telefónico',()=>{const key={id:'x',remoteJid:'1234567890123456@lid',fromMe:false};assert.equal(normalize(event({key}),now).phone,null);assert.equal(normalize(event({key:{...key,remoteJidAlt:'5493510000000@s.whatsapp.net'}}),now).phone,'5493510000000');});
+test('fechas faltantes o inválidas se marcan como hora de recepción',()=>{for(const ts of [undefined,'no-fecha',0,999999999999999]){const m=normalize(event({messageTimestamp:ts}),now);assert.equal(m.occurredAt,now.toISOString());assert.equal(m.timestampSource,'received');}});
+test('no inventa ID del proveedor si falta',()=>{assert.equal(normalize(event({key:{remoteJid:event().key.remoteJid}}),now).externalId,null);});
+test('contenido efímero y respuestas de listas',()=>{assert.equal(normalize(event({message:{ephemeralMessage:{message:{extendedTextMessage:{text:'Dentro'}}}}}),now).body,'Dentro');assert.equal(normalize(event({message:{listResponseMessage:{title:'Mañana'}}}),now).kind,'interaction');});
+test('metadatos multimedia no guardan URLs firmadas ni claves',()=>{const m=normalize(event({message:{imageMessage:{caption:'Imagen',url:'https://secret.invalid',mediaKey:'secret',mimetype:'image/jpeg'}}}),now);assert.equal(m.kind,'image');assert.deepEqual(m.media,{mime:'image/jpeg',name:null});assert.ok(!JSON.stringify(m).includes('secret'));});
+test('ACK pendiente no es entrega; estados numéricos Baileys no se adelantan',()=>{assert.equal(receiptStatus('PENDING'),null);assert.equal(receiptStatus(1),null);assert.deepEqual(receiptStatus(2),{rank:1,status:'sent'});assert.equal(receiptStatus(3).status,'delivered');assert.equal(receiptStatus(4).status,'read');assert.equal(receiptStatus('READ').rank,3);});
+test('valida destinatarios y no acepta URLs en lugar de teléfonos',()=>{assert.equal(recipient('https://evil.invalid'),null);assert.equal(validJid('123456789@lid'),true);assert.equal(recipient('123456789@lid'),null);});
+test('inicio rechaza credenciales incompletas',()=>assert.throws(()=>loadConfig({}),/Faltan variables/));
+test('inicio rechaza secretos reutilizados y HTTP en producción',()=>{const e={DATABASE_URL:'postgres://x',SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public',EVOLUTION_BASE_URL:'https://evo.invalid',EVOLUTION_API_KEY:'key',EVOLUTION_INSTANCE:'Endomec',WEBHOOK_SECRET:'a'.repeat(32),BOT_GATEWAY_SECRET:'a'.repeat(32),APP_ORIGIN:'https://inbox.invalid'};assert.throws(()=>loadConfig(e),/distintos/);assert.throws(()=>loadConfig({...e,BOT_GATEWAY_SECRET:'b'.repeat(32),NODE_ENV:'production',APP_ORIGIN:'http://inbox.invalid'}),/HTTPS/);});
