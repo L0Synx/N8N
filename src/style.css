@@ -3,3 +3,24 @@
 @media(max-width:1050px){.workspace{grid-template-columns:59px 310px minmax(0,1fr)}.inbox-header{padding:25px 18px 20px}.welcome{padding:26px}.welcome h2{font-size:25px}.welcome-features{gap:15px;flex-direction:column;align-items:center}.chat-header{padding:0 18px}.chat-person>span i,.chat-person>span i+span{display:none}.mode-control{padding:7px}.mode-control select{font-size:10px;max-width:115px}.messages{padding-left:6%;padding-right:6%}.bubble{max-width:90%}.story-line{flex-wrap:wrap;font-size:10px}.login-form{padding:35px}.login-bottom{left:35px;right:35px}}
 @media(max-width:760px){.workspace{grid-template-columns:54px minmax(0,1fr)}.main-panel{display:none}.chat-open .rail,.chat-open .sidebar{display:none}.chat-open{grid-template-columns:minmax(0,1fr)}.chat-open .main-panel{display:flex}.mobile-back{display:flex;margin-left:-10px}.chat-header{height:76px;padding:0 15px;gap:9px}.chat-header .avatar{width:35px;height:35px;font-size:11px}.chat-person h2{font-size:13px;max-width:145px}.chat-person>span{font-size:9px}.mode-control svg{display:none}.mode-control select{max-width:109px}.attention-banner{font-size:9px;padding:9px 15px}.composer{padding:12px}.composer-hint{font-size:7px}.messages{padding:18px 16px}.bubble{max-width:88%}.bubble p{font-size:13px}.toast{left:12px;right:12px;bottom:110px}.login{grid-template-columns:1fr}.login-story{padding:30px;min-height:220px}.story-copy{padding:25px 0 0}.story-copy h1{font-size:31px;letter-spacing:-1px;margin:16px 0}.story-copy p,.story-line,.login-story footer{display:none}.login-story .brand{font-size:22px}.login-form{padding:37px 27px 80px;min-height:530px}.secure-icon{display:none}.login-inner h2{font-size:25px}.login-inner>p{margin-bottom:25px}.login-bottom{bottom:25px;left:27px;right:27px}.login-story:after{width:350px;height:350px;bottom:-230px;right:-120px}.settings{padding:25px}.setting-row{font-size:11px}.setting-row b{max-width:45%}.rail{padding-top:25px}.inbox-header h1{font-size:25px}.conversation{padding:19px 22px}.sidebar-controls{padding-top:10px}.sidebar-footer{padding:18px 22px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+/* Fix: scroll del historial de chat */
+.workspace {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+.main-panel {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.messages {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
