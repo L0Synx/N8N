@@ -1,4 +1,3 @@
-
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#18202d;background:#f6f7f9;font-synthesis:none;font-size:14px;font-weight:400;--blue:#225bfa;--muted:#8490a1;--line:#e9ecf1}
 *{box-sizing:border-box}
 html,body,#root{width:100%;min-width:0;min-height:100%}
@@ -46,7 +45,7 @@ button,input,select,textarea{-webkit-tap-highlight-color:transparent}
 .form-error svg{flex-shrink:0}
 
 /* Estructura principal */
-.workspace{height:100vh;height:100dvh;min-height:0;min-width:0;display:grid;grid-template-columns:70px 355px minmax(0,1fr);grid-template-rows:minmax(0,1fr);overflow:hidden}
+.workspace{height:100vh;height:100dvh;min-height:0;min-width:0;display:grid;grid-template-columns:70px 355px minmax(0,1fr);grid-template-rows:minmax(0,1fr);overflow:hidden;align-items:stretch}
 .rail{background:#10151f;color:#7b8799;display:flex;flex-direction:column;align-items:center;gap:15px;padding:25px 0 20px}
 .rail-logo{color:white;font-size:37px;font-weight:800;line-height:35px;position:relative;margin-bottom:34px}
 .rail-logo span{position:absolute;color:#5d89ff;font-size:18px;right:-8px;top:-7px}
@@ -105,12 +104,11 @@ button,input,select,textarea{-webkit-tap-highlight-color:transparent}
 .list-empty p{font-size:11px;line-height:1.7;max-width:200px;margin:10px auto}
 
 /* Panel del chat: la altura queda limitada al espacio disponible */
-.main-panel{min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#f5f7fa}
+.main-panel{width:100%;min-width:0;min-height:0;height:100%;max-height:100%;align-self:stretch;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#f5f7fa;box-sizing:border-box}
 
-/* Si existe la clase chat-layout, también usa flex para evitar que el contenido
-   fuerce al panel a crecer más allá de la pantalla. */
-.main-panel.chat-layout{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden}
-.main-panel.chat-layout>.messages{flex:1 1 0%;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden}
+/* El panel del chat y su historial no deben crecer por el contenido */
+.main-panel.chat-layout{display:flex;flex:1 1 0%;flex-direction:column;width:100%;min-width:0;min-height:0;height:100%;max-height:100%;align-self:stretch;overflow:hidden;box-sizing:border-box}
+.main-panel.chat-layout>.messages{display:block;flex:1 1 0%;min-height:0;min-width:0;height:auto;max-height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain}
 .main-panel.chat-layout>.composer{flex-shrink:0}
 
 .welcome{min-height:0;overflow-y:auto;flex:1;display:flex;flex-direction:column;padding:31px 42px;background:#f7f8fb}
@@ -150,7 +148,7 @@ button,input,select,textarea{-webkit-tap-highlight-color:transparent}
 .attention-banner.paused{background:#fcf8ed;color:#ac9563}
 
 /* Historial: ocupa el espacio restante y tiene su propio scroll */
-.messages{flex:1 1 0%;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;overflow-anchor:none;padding:24px 7% 30px;scrollbar-width:thin;scrollbar-color:#dce2ec transparent;background-image:radial-gradient(#cfd6e538 .7px,transparent .7px);background-size:19px 19px}
+.messages{display:block;flex:1 1 0%;min-height:0;min-width:0;height:auto;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;overflow-anchor:none;padding:24px 7% 30px;scrollbar-width:thin;scrollbar-color:#dce2ec transparent;background-image:radial-gradient(#cfd6e538 .7px,transparent .7px);background-size:19px 19px}
 .message-row{display:flex;margin:7px 0}
 .message-row.out{justify-content:flex-end}
 .bubble{overflow-wrap:anywhere;max-width:78%;min-width:135px;border:1px solid #e6eaf1;border-radius:0 11px 11px 11px;background:white;padding:12px 14px 8px;box-shadow:0 1px 3px #12224503}
